@@ -19,7 +19,8 @@
       "Bash(for i in {1..5})",
       "Bash(do:*)",
       "Bash(done)",
-      "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1OTI2NTEzMSwiZXhwIjoxNzU5MjY2MDMxfQ.rRN19wXWp91UE0DkccWmZYDkijjKb_Xwk8DhcdrtEcyBti_RJos7DVcX9zzqdIsed767wx7pWyp-50Bcm01HOA\")"
+      "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1OTI2NTEzMSwiZXhwIjoxNzU5MjY2MDMxfQ.rRN19wXWp91UE0DkccWmZYDkijjKb_Xwk8DhcdrtEcyBti_RJos7DVcX9zzqdIsed767wx7pWyp-50Bcm01HOA\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1OTI2NjEwNCwiZXhwIjoxNzU5MjY3MDA0fQ.QPdHzHQWaUbytphKoHtJiu0ZKwBBfn3mp4i2CkrqHALxl0sDk1s1xK4bp25pZStBITHROP8qP2wQjKJapJ68RQ\")"
     ],
     "deny": [],
     "ask": []

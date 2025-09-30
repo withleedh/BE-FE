@@ -32,6 +32,15 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Handle 403 Forbidden (e.g., server restart with lost token DB)
+    if (error.response?.status === 403) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
+
+    // Handle 401 Unauthorized (token expired)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 

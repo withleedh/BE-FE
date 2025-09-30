@@ -44,39 +44,43 @@ public class DataInitializer {
                 adminUser = userRepository.save(adminUser);
                 System.out.println("✓ Created admin user: admin / admin123");
 
-                // Create sample diagnostic records
-                String[][] diagnostics = {
-                    {"KMHXX00XXXX000001", "CH2025001", "Sonata", "2024", "Theta", "3200", "85", "45000", "NORMAL", "John Kim"},
-                    {"KMHXX00XXXX000002", "CH2025002", "Tucson", "2024", "Smartstream", "2800", "78", "32000", "WARNING", "Sarah Lee"},
-                    {"KMHXX00XXXX000003", "CH2025003", "Santa Fe", "2023", "Smartstream", "3100", "92", "58000", "CRITICAL", "Mike Park"},
-                    {"KMHXX00XXXX000004", "CH2025004", "Elantra", "2024", "Smartstream", "2950", "82", "25000", "NORMAL", "John Kim"},
-                    {"KMHXX00XXXX000005", "CH2025005", "Kona", "2023", "Gamma", "3300", "88", "41000", "WARNING", "Sarah Lee"},
-                    {"KMHXX00XXXX000006", "CH2025006", "Palisade", "2024", "Theta", "2700", "75", "18000", "NORMAL", "Mike Park"},
-                    {"KMHXX00XXXX000007", "CH2025007", "Ioniq 5", "2024", "Electric", "0", "45", "12000", "NORMAL", "John Kim"},
-                    {"KMHXX00XXXX000008", "CH2025008", "Genesis G80", "2023", "Theta", "3400", "90", "52000", "WARNING", "Sarah Lee"},
-                    {"KMHXX00XXXX000009", "CH2025009", "Venue", "2024", "Gamma", "3000", "80", "28000", "NORMAL", "Mike Park"},
-                    {"KMHXX00XXXX000010", "CH2025010", "Staria", "2023", "Smartstream", "2900", "86", "38000", "NORMAL", "John Kim"}
-                };
+                // Create 100 sample diagnostic records
+                String[] models = {"Sonata", "Tucson", "Santa Fe", "Elantra", "Kona", "Palisade", "Ioniq 5", "Genesis G80", "Venue", "Staria"};
+                String[] engineTypes = {"Theta", "Smartstream", "Gamma", "Electric"};
+                String[] statuses = {"NORMAL", "WARNING", "CRITICAL"};
+                String[] technicians = {"John Kim", "Sarah Lee", "Mike Park", "Emily Chen", "David Park"};
+                String[] years = {"2022", "2023", "2024", "2025"};
 
-                for (int i = 0; i < diagnostics.length; i++) {
-                    String[] data = diagnostics[i];
-                    String engineType = data[4];
-                    String title = engineType + " Engine - VIN: " + data[0];
-                    String description = "Vehicle Model: " + data[2] + " | Year: " + data[3] + " | Status: " + data[8];
+                for (int i = 1; i <= 100; i++) {
+                    String vinNumber = String.format("KMHXX00XXXX%06d", i);
+                    String chassisNumber = String.format("CH2025%03d", i);
+                    String model = models[i % models.length];
+                    String year = years[i % years.length];
+                    String engineType = engineTypes[i % engineTypes.length];
+
+                    // Electric cars have 0 RPM
+                    int rpm = engineType.equals("Electric") ? 0 : 2700 + (i * 13) % 800;
+                    int engineTemp = 70 + (i * 7) % 30;
+                    int mileage = 10000 + (i * 1000) % 60000;
+                    String status = statuses[i % statuses.length];
+                    String technician = technicians[i % technicians.length];
+
+                    String title = engineType + " Engine - VIN: " + vinNumber;
+                    String description = "Vehicle Model: " + model + " | Year: " + year + " | Status: " + status;
 
                     Item item = Item.builder()
                             .title(title)
                             .description(description)
-                            .vin(data[0])
-                            .chassisNumber(data[1])
-                            .vehicleModel(data[2])
-                            .modelYear(data[3])
-                            .engineType(data[4])
-                            .rpm(Integer.parseInt(data[5]))
-                            .engineTemp(Integer.parseInt(data[6]))
-                            .mileage(Integer.parseInt(data[7]))
-                            .status(data[8])
-                            .technician(data[9])
+                            .vin(vinNumber)
+                            .chassisNumber(chassisNumber)
+                            .vehicleModel(model)
+                            .modelYear(year)
+                            .engineType(engineType)
+                            .rpm(rpm)
+                            .engineTemp(engineTemp)
+                            .mileage(mileage)
+                            .status(status)
+                            .technician(technician)
                             .diagnosticDate(LocalDateTime.now().minusDays(i))
                             .user(adminUser)
                             .createdAt(LocalDateTime.now())
@@ -84,7 +88,7 @@ public class DataInitializer {
                             .build();
                     itemRepository.save(item);
                 }
-                System.out.println("✓ Created 10 sample diagnostic records");
+                System.out.println("✓ Created 100 sample diagnostic records");
             } catch (Exception e) {
                 System.err.println("Error initializing data: " + e.getMessage());
                 e.printStackTrace();

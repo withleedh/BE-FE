@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Download, Plus, Filter, Calendar, AlertCircle, CheckCircle, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, Download, Plus, Filter, Calendar, CheckCircle, AlertTriangle, AlertCircle } from 'lucide-react';
 import type { DiagnosticRecord, DiagnosticFilters } from '../types';
 import { EngineType, DiagnosticStatus } from '../types';
 import { diagnosticService } from '../services/diagnostic.service';
@@ -16,13 +16,7 @@ const DiagnosticList: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-
-  const [stats, setStats] = useState({
-    total: 0,
-    normal: 0,
-    warning: 0,
-    critical: 0,
-  });
+  const tableRef = useRef<HTMLDivElement>(null);
 
   const engineTypes = [
     { type: EngineType.THETA, label: 'Theta Engine' },
@@ -52,18 +46,6 @@ const DiagnosticList: React.FC = () => {
       setRecords(response.content);
       setTotalPages(response.totalPages);
       setTotalElements(response.totalElements);
-
-      // Calculate stats
-      const normal = response.content.filter(r => r.status === DiagnosticStatus.NORMAL).length;
-      const warning = response.content.filter(r => r.status === DiagnosticStatus.WARNING).length;
-      const critical = response.content.filter(r => r.status === DiagnosticStatus.CRITICAL).length;
-
-      setStats({
-        total: response.totalElements,
-        normal,
-        warning,
-        critical,
-      });
     } catch (error) {
       console.error('Failed to fetch records:', error);
     } finally {
@@ -132,41 +114,6 @@ const DiagnosticList: React.FC = () => {
             <Plus size={20} />
             <span>New Record</span>
           </button>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="card bg-gradient-to-br from-hyundai-navy to-hyundai-blue text-white">
-            <div className="text-sm opacity-90">Total Records</div>
-            <div className="text-3xl font-bold mt-2">{stats.total}</div>
-          </div>
-          <div className="card border-l-4 border-green-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm text-gray-600">Normal</div>
-                <div className="text-2xl font-bold text-green-600 mt-1">{stats.normal}</div>
-              </div>
-              <CheckCircle size={32} className="text-green-500" />
-            </div>
-          </div>
-          <div className="card border-l-4 border-yellow-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm text-gray-600">Warning</div>
-                <div className="text-2xl font-bold text-yellow-600 mt-1">{stats.warning}</div>
-              </div>
-              <AlertTriangle size={32} className="text-yellow-500" />
-            </div>
-          </div>
-          <div className="card border-l-4 border-red-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm text-gray-600">Critical</div>
-                <div className="text-2xl font-bold text-red-600 mt-1">{stats.critical}</div>
-              </div>
-              <AlertCircle size={32} className="text-red-500" />
-            </div>
-          </div>
         </div>
 
         {/* Engine Type Tabs */}
@@ -281,7 +228,7 @@ const DiagnosticList: React.FC = () => {
         </div>
 
         {/* Records Table */}
-        <div className="card overflow-hidden">
+        <div ref={tableRef} className="card overflow-hidden">
           {isLoading ? (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-hyundai-navy mx-auto"></div>
@@ -336,23 +283,88 @@ const DiagnosticList: React.FC = () => {
               <div className="text-sm text-gray-600">
                 Showing {currentPage * 10 + 1} to {Math.min((currentPage + 1) * 10, totalElements)} of {totalElements} records
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
                 <button
+                  type="button"
                   onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                   disabled={currentPage === 0}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Previous
+                  &laquo;
                 </button>
-                <span className="text-sm text-gray-600">
-                  Page {currentPage + 1} of {totalPages}
-                </span>
+
+                {(() => {
+                  const pages = [];
+                  const maxPagesToShow = 7;
+                  let startPage = Math.max(0, currentPage - Math.floor(maxPagesToShow / 2));
+                  let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
+
+                  if (endPage - startPage < maxPagesToShow - 1) {
+                    startPage = Math.max(0, endPage - maxPagesToShow + 1);
+                  }
+
+                  // First page
+                  if (startPage > 0) {
+                    pages.push(
+                      <button
+                        key={0}
+                        type="button"
+                        onClick={() => setCurrentPage(0)}
+                        className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
+                      >
+                        1
+                      </button>
+                    );
+                    if (startPage > 1) {
+                      pages.push(<span key="ellipsis1" className="px-2">...</span>);
+                    }
+                  }
+
+                  // Page numbers
+                  for (let i = startPage; i <= endPage; i++) {
+                    pages.push(
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setCurrentPage(i)}
+                        className={`px-3 py-1 border rounded ${
+                          currentPage === i
+                            ? 'bg-blue-500 text-white border-blue-500'
+                            : 'border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    );
+                  }
+
+                  // Last page
+                  if (endPage < totalPages - 1) {
+                    if (endPage < totalPages - 2) {
+                      pages.push(<span key="ellipsis2" className="px-2">...</span>);
+                    }
+                    pages.push(
+                      <button
+                        key={totalPages - 1}
+                        type="button"
+                        onClick={() => setCurrentPage(totalPages - 1)}
+                        className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50"
+                      >
+                        {totalPages}
+                      </button>
+                    );
+                  }
+
+                  return pages;
+                })()}
+
                 <button
+                  type="button"
                   onClick={() => setCurrentPage(Math.min(totalPages - 1, currentPage + 1))}
                   disabled={currentPage >= totalPages - 1}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Next
+                  &raquo;
                 </button>
               </div>
             </div>
