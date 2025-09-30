@@ -21,26 +21,22 @@ public class ItemService {
     private final UserRepository userRepository;
 
     public Page<ItemResponse> getItems(String username, String search, Pageable pageable) {
-        User user = getUserByUsername(username);
+        // For diagnostic data, show all items regardless of user
         Page<Item> items;
 
         if (search != null && !search.isEmpty()) {
-            items = itemRepository.findByUserAndSearch(user, search, pageable);
+            items = itemRepository.findByTitleContainingOrDescriptionContaining(search, search, pageable);
         } else {
-            items = itemRepository.findByUser(user, pageable);
+            items = itemRepository.findAll(pageable);
         }
 
         return items.map(this::mapToResponse);
     }
 
     public ItemResponse getItemById(String username, Long itemId) {
-        User user = getUserByUsername(username);
+        // For diagnostic data, allow all users to view
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new RuntimeException("Item not found"));
-
-        if (!item.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Not authorized to access this item");
-        }
 
         return mapToResponse(item);
     }
@@ -99,6 +95,17 @@ public class ItemService {
                 .id(item.getId())
                 .title(item.getTitle())
                 .description(item.getDescription())
+                .vin(item.getVin())
+                .chassisNumber(item.getChassisNumber())
+                .vehicleModel(item.getVehicleModel())
+                .modelYear(item.getModelYear())
+                .rpm(item.getRpm())
+                .engineTemp(item.getEngineTemp())
+                .mileage(item.getMileage())
+                .diagnosticDate(item.getDiagnosticDate())
+                .status(item.getStatus())
+                .technician(item.getTechnician())
+                .engineType(item.getEngineType())
                 .createdAt(item.getCreatedAt())
                 .updatedAt(item.getUpdatedAt())
                 .build();

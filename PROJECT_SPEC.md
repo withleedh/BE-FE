@@ -73,12 +73,14 @@ gogo/
 - **Auto Logout**: On refresh token expiration
 - **Protected Routes**: Redirect to login if not authenticated
 
-### 2. List View
+### 2. Diagnostic Records Management
 
-- **Display Items**: Show list of items (e.g., tasks, products, posts)
+- **Display Records**: Show list of automotive diagnostic records
+- **Multiple Engine Types**: Support for Theta, Atkinson, Gamma, and Smartstream engines
 - **Pagination**: Server-side pagination
-- **Search/Filter**: Basic search functionality
-- **CRUD Operations**: Create, Read, Update, Delete items
+- **Search/Filter**: Search by VIN, engine type, date range
+- **CRUD Operations**: Create, Read, Update, Delete diagnostic records
+- **Download**: Export diagnostic data as CSV/PDF
 - **Authorization**: Only authenticated users can access
 
 ---
@@ -93,7 +95,7 @@ gogo/
 
 ```json
 {
-  "username": "string",
+  "userId": "string",
   "password": "string"
 }
 ```
@@ -136,6 +138,7 @@ gogo/
 #### POST `/api/auth/logout`
 
 **Request:**
+
 - Requires Authorization header with Bearer token
 
 **Response:**
@@ -166,9 +169,17 @@ gogo/
 }
 ```
 
-### Item Endpoints
+### Diagnostic Record Endpoints
 
-#### GET `/api/items?page=0&size=10&search=`
+#### GET `/api/diagnostics?page=0&size=10&engineType=THETA&search=&startDate=&endDate=`
+
+**Query Parameters:**
+- `page`: Page number (default: 0)
+- `size`: Page size (default: 10)
+- `engineType`: Engine type filter (THETA, ATKINSON, GAMMA, SMARTSTREAM)
+- `search`: Search by VIN or chassis number
+- `startDate`: Filter by date range (ISO 8601 format)
+- `endDate`: Filter by date range (ISO 8601 format)
 
 **Response:**
 
@@ -177,8 +188,24 @@ gogo/
   "content": [
     {
       "id": "number",
-      "title": "string",
-      "description": "string",
+      "vin": "string",
+      "chassisNumber": "string",
+      "engineType": "THETA | ATKINSON | GAMMA | SMARTSTREAM",
+      "modelYear": "number",
+      "vehicleModel": "string",
+      "rpm": "number",
+      "engineTemp": "number",
+      "oilPressure": "number",
+      "fuelPressure": "number",
+      "intakeAirTemp": "number",
+      "throttlePosition": "number",
+      "maf": "number",
+      "dtcCodes": ["string"],
+      "mileage": "number",
+      "diagnosticDate": "string",
+      "technician": "string",
+      "notes": "string",
+      "status": "NORMAL | WARNING | CRITICAL",
       "createdAt": "string",
       "updatedAt": "string"
     }
@@ -189,29 +216,102 @@ gogo/
 }
 ```
 
-#### POST `/api/items`
+#### GET `/api/diagnostics/{id}`
+
+**Response:**
+
+```json
+{
+  "id": "number",
+  "vin": "string",
+  "chassisNumber": "string",
+  "engineType": "THETA | ATKINSON | GAMMA | SMARTSTREAM",
+  "modelYear": "number",
+  "vehicleModel": "string",
+  "rpm": "number",
+  "engineTemp": "number",
+  "oilPressure": "number",
+  "fuelPressure": "number",
+  "intakeAirTemp": "number",
+  "throttlePosition": "number",
+  "maf": "number",
+  "dtcCodes": ["string"],
+  "mileage": "number",
+  "diagnosticDate": "string",
+  "technician": "string",
+  "notes": "string",
+  "status": "NORMAL | WARNING | CRITICAL",
+  "createdAt": "string",
+  "updatedAt": "string"
+}
+```
+
+#### POST `/api/diagnostics`
 
 **Request:**
 
 ```json
 {
-  "title": "string",
-  "description": "string"
+  "vin": "string",
+  "chassisNumber": "string",
+  "engineType": "THETA | ATKINSON | GAMMA | SMARTSTREAM",
+  "modelYear": "number",
+  "vehicleModel": "string",
+  "rpm": "number",
+  "engineTemp": "number",
+  "oilPressure": "number",
+  "fuelPressure": "number",
+  "intakeAirTemp": "number",
+  "throttlePosition": "number",
+  "maf": "number",
+  "dtcCodes": ["string"],
+  "mileage": "number",
+  "diagnosticDate": "string",
+  "technician": "string",
+  "notes": "string",
+  "status": "NORMAL | WARNING | CRITICAL"
 }
 ```
 
-#### PUT `/api/items/{id}`
+#### PUT `/api/diagnostics/{id}`
 
 **Request:**
 
 ```json
 {
-  "title": "string",
-  "description": "string"
+  "vin": "string",
+  "chassisNumber": "string",
+  "engineType": "THETA | ATKINSON | GAMMA | SMARTSTREAM",
+  "modelYear": "number",
+  "vehicleModel": "string",
+  "rpm": "number",
+  "engineTemp": "number",
+  "oilPressure": "number",
+  "fuelPressure": "number",
+  "intakeAirTemp": "number",
+  "throttlePosition": "number",
+  "maf": "number",
+  "dtcCodes": ["string"],
+  "mileage": "number",
+  "diagnosticDate": "string",
+  "technician": "string",
+  "notes": "string",
+  "status": "NORMAL | WARNING | CRITICAL"
 }
 ```
 
-#### DELETE `/api/items/{id}`
+#### DELETE `/api/diagnostics/{id}`
+
+#### GET `/api/diagnostics/download?engineType=&startDate=&endDate=&format=csv`
+
+**Query Parameters:**
+- `engineType`: Filter by engine type
+- `startDate`: Start date for export
+- `endDate`: End date for export
+- `format`: Export format (csv or pdf)
+
+**Response:**
+- File download (CSV or PDF)
 
 ---
 
@@ -230,18 +330,53 @@ CREATE TABLE users (
 );
 ```
 
-### Items Table
+### Diagnostic Records Table
 
 ```sql
-CREATE TABLE items (
+CREATE TABLE diagnostic_records (
     id BIGSERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
+    vin VARCHAR(17) NOT NULL,
+    chassis_number VARCHAR(50) NOT NULL,
+    engine_type VARCHAR(20) NOT NULL CHECK (engine_type IN ('THETA', 'ATKINSON', 'GAMMA', 'SMARTSTREAM')),
+    model_year INT NOT NULL,
+    vehicle_model VARCHAR(100) NOT NULL,
+    rpm DECIMAL(10, 2),
+    engine_temp DECIMAL(10, 2),
+    oil_pressure DECIMAL(10, 2),
+    fuel_pressure DECIMAL(10, 2),
+    intake_air_temp DECIMAL(10, 2),
+    throttle_position DECIMAL(10, 2),
+    maf DECIMAL(10, 2),
+    dtc_codes TEXT,
+    mileage INT,
+    diagnostic_date TIMESTAMP NOT NULL,
+    technician VARCHAR(100),
+    notes TEXT,
+    status VARCHAR(20) CHECK (status IN ('NORMAL', 'WARNING', 'CRITICAL')),
     user_id BIGINT REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_vin (vin),
+    INDEX idx_engine_type (engine_type),
+    INDEX idx_diagnostic_date (diagnostic_date),
+    INDEX idx_status (status)
 );
 ```
+
+**Field Descriptions:**
+- `vin`: Vehicle Identification Number (17 characters)
+- `chassis_number`: Chassis/Frame number
+- `engine_type`: Engine type (THETA, ATKINSON, GAMMA, SMARTSTREAM)
+- `rpm`: Engine RPM at diagnostic time
+- `engine_temp`: Engine temperature (°C)
+- `oil_pressure`: Oil pressure (PSI)
+- `fuel_pressure`: Fuel pressure (PSI)
+- `intake_air_temp`: Intake air temperature (°C)
+- `throttle_position`: Throttle position percentage (%)
+- `maf`: Mass Air Flow (g/s)
+- `dtc_codes`: Diagnostic Trouble Codes (JSON array stored as TEXT)
+- `mileage`: Vehicle mileage (km)
+- `status`: Diagnostic status
 
 ### Refresh Tokens Table
 
@@ -296,7 +431,9 @@ CREATE TABLE refresh_tokens (
    - Implement User entity and repository
    - Create authentication service with JWT
    - Build auth controllers and endpoints
-   - Implement Item entity and CRUD operations
+   - Implement DiagnosticRecord entity with engine type enum
+   - Create CRUD operations with filtering by engine type
+   - Add CSV/PDF download functionality
    - Add exception handling and validation
 
 2. **Frontend Setup**
@@ -306,7 +443,10 @@ CREATE TABLE refresh_tokens (
    - Create API service layer
    - Implement authentication context
    - Build login page
-   - Build list page with CRUD operations
+   - Build diagnostic records list page with engine type tabs (Theta, Atkinson, Gamma, Smartstream)
+   - Implement CRUD operations with detailed diagnostic form
+   - Add search and date range filters
+   - Add download button for CSV/PDF export
    - Add error handling and loading states
 
 3. **Integration & Testing**

@@ -32,8 +32,42 @@ public class Item {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    // Diagnostic fields
+    @Column(name = "vin")
+    private String vin;
+
+    @Column(name = "chassis_number")
+    private String chassisNumber;
+
+    @Column(name = "vehicle_model")
+    private String vehicleModel;
+
+    @Column(name = "model_year")
+    private String modelYear;
+
+    @Column(name = "rpm")
+    private Integer rpm;
+
+    @Column(name = "engine_temp")
+    private Integer engineTemp;
+
+    @Column(name = "mileage")
+    private Integer mileage;
+
+    @Column(name = "diagnostic_date")
+    private LocalDateTime diagnosticDate;
+
+    @Column(name = "status")
+    private String status;
+
+    @Column(name = "technician")
+    private String technician;
+
+    @Column(name = "engine_type")
+    private String engineType;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = true)
     private User user;
 
     @CreationTimestamp

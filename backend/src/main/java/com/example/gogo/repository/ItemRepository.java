@@ -15,4 +15,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query("SELECT i FROM Item i WHERE i.user = :user AND (i.title LIKE %:search% OR i.description LIKE %:search%)")
     Page<Item> findByUserAndSearch(@Param("user") User user, @Param("search") String search, Pageable pageable);
+
+    Page<Item> findByTitleContainingOrDescriptionContaining(String titleSearch, String descriptionSearch, Pageable pageable);
 }

@@ -3,7 +3,23 @@
     "allow": [
       "Bash(curl:*)",
       "Bash(unzip:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(./gradlew build:*)",
+      "Bash(npm create:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss init:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(./gradlew:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(python3:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxNzU5MjQwNDU3LCJleHAiOjE3NTkyNDEzNTd9.fth1IomvSIjl6fmfECB2YDstRCQaIPdbQJ8DM7qFaJ3JsF8PgLnjV2tyS3zI0TRQM7BHco-15lNVJQ_3_dYCBw\")",
+      "Bash(for i in {1..5})",
+      "Bash(do:*)",
+      "Bash(done)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc1OTI2NTEzMSwiZXhwIjoxNzU5MjY2MDMxfQ.rRN19wXWp91UE0DkccWmZYDkijjKb_Xwk8DhcdrtEcyBti_RJos7DVcX9zzqdIsed767wx7pWyp-50Bcm01HOA\")"
     ],
     "deny": [],
     "ask": []
